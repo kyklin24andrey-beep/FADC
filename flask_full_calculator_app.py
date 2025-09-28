@@ -1,13 +1,7 @@
 # flask_full_calculator_app.py
-# Single-file Flask app that implements many calculators (basic, scientific, programmer, unit conversions,
-# mortgage, BMI, date difference) and serves a simple HTML UI. Includes a placeholder for Google AdSense script.
-# Usage:
-# 1. python -m venv env
-# 2. source env/bin/activate   (or env\Scripts\activate on Windows)
-# 3. pip install -r requirements.txt  (requirements: Flask)
-# 4. python flask_full_calculator_app.py
+# Красивый и интерактивный Flask калькулятор с улучшенным дизайном и анимациями на фронтенде.
 
-from flask import Flask, request, render_template_string, redirect, url_for
+from flask import Flask, request, render_template_string
 import math, datetime
 
 app = Flask(__name__)
@@ -18,27 +12,35 @@ TEMPLATE = '''
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Все калькуляторы на Python</title>
-  <!-- TODO: вставьте сюда ваш Google AdSense код после одобрения -->
-  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" crossorigin="anonymous"></script>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script> -->
+  <title>Интерактивные калькуляторы</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:18px}
-    .card{border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:12px}
-    input,select{padding:6px;margin:4px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
+    body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(to right, #f0f4f8, #d9e2ec); margin:0; padding:0;}
+    header {background:#3f72af; color:white; padding:20px; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
+    h1 {margin:0; font-size:2rem;}
+    .container {max-width: 900px; margin:20px auto; padding:20px;}
+    .card {background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s;}
+    .card:hover {transform: translateY(-5px);}
+    input, select, button {padding:10px; margin:5px; border-radius:6px; border:1px solid #ccc; font-size:1rem;}
+    button {background:#3f72af; color:white; border:none; cursor:pointer; transition: background 0.3s;}
+    button:hover {background:#112d4e;}
+    .result {margin-top:10px; font-weight:bold; font-size:1.2rem; color:#112d4e;}
+    footer {text-align:center; padding:15px; color:#555; font-size:0.9rem;}
   </style>
+  <script>
+    function animateResult(id) {
+      const el = document.getElementById(id);
+      el.style.transform = 'scale(1.2)';
+      setTimeout(() => el.style.transform = 'scale(1)', 300);
+    }
+  </script>
 </head>
 <body>
-  <h1>Все калькуляторы — единый сайт</h1>
-  <p>Пример: базовый, научный, конвертеры, ипотека, BMI, программистский, разница дат.</p>
-
+<header><h1>Интерактивные калькуляторы на Python</h1></header>
+<div class="container">
   <div class="card">
     <h2>Базовый калькулятор</h2>
     <form method="post" action="/basic">
-      <input name="a" type="text" placeholder="число A" required>
+      <input name="a" type="number" step="any" placeholder="Число A" required>
       <select name="op">
         <option value="+">+</option>
         <option value="-">-</option>
@@ -47,43 +49,37 @@ TEMPLATE = '''
         <option value="%">%</option>
         <option value="**">^</option>
       </select>
-      <input name="b" type="text" placeholder="число B" required>
+      <input name="b" type="number" step="any" placeholder="Число B" required>
       <button type="submit">Посчитать</button>
     </form>
-    {% if basic is defined %}
-      <p>Результат: <strong>{{basic}}</strong></p>
-    {% endif %}
+    {% if basic is defined %}<div class="result" id="basicResult" onload="animateResult('basicResult')">{{basic}}</div>{% endif %}
   </div>
 
   <div class="card">
     <h2>Научный калькулятор</h2>
     <form method="post" action="/scientific">
-      <input name="expr" type="text" placeholder="пример: sin(1)+log(10)" size="40" required>
+      <input name="expr" type="text" placeholder="Пример: sin(1)+log(10)" size="40" required>
       <button type="submit">Вычислить</button>
     </form>
-    {% if scientific is defined %}
-      <p>Результат: <strong>{{scientific}}</strong></p>
-    {% endif %}
+    {% if scientific is defined %}<div class="result" id="sciResult">{{scientific}}</div>{% endif %}
   </div>
 
   <div class="card">
-    <h2>Конвертеры (длина, вес, температура)</h2>
+    <h2>Конвертеры</h2>
     <form method="post" action="/convert">
       <select name="kind">
         <option value="temp">Температура (C↔F)</option>
         <option value="length">Длина (m↔ft)</option>
         <option value="weight">Вес (kg↔lb)</option>
       </select>
-      <input name="value" type="number" step="any" placeholder="значение" required>
+      <input name="value" type="number" step="any" placeholder="Значение" required>
       <select name="direction">
-        <option value="forward">primary → secondary</option>
-        <option value="back">secondary → primary</option>
+        <option value="forward">Основное → Вторичное</option>
+        <option value="back">Вторичное → Основное</option>
       </select>
       <button type="submit">Конвертировать</button>
     </form>
-    {% if convert is defined %}
-      <p>Результат: <strong>{{convert}}</strong></p>
-    {% endif %}
+    {% if convert is defined %}<div class="result" id="convResult">{{convert}}</div>{% endif %}
   </div>
 
   <div class="card">
@@ -94,28 +90,23 @@ TEMPLATE = '''
       <input name="years" type="number" step="1" placeholder="Срок (лет)" required>
       <button type="submit">Рассчитать платёж</button>
     </form>
-    {% if mortgage is defined %}
-      <p>Ежемесячный платёж: <strong>{{mortgage}}</strong></p>
-      <p>Общая выплата: <strong>{{mortgage_total}}</strong></p>
-    {% endif %}
+    {% if mortgage is defined %}<div class="result">Ежемесячный платёж: {{mortgage}} | Общая выплата: {{mortgage_total}}</div>{% endif %}
   </div>
 
   <div class="card">
     <h2>BMI</h2>
     <form method="post" action="/bmi">
-      <input name="weight" type="number" step="any" placeholder="вес кг" required>
-      <input name="height" type="number" step="any" placeholder="рост м" required>
+      <input name="weight" type="number" step="any" placeholder="Вес (кг)" required>
+      <input name="height" type="number" step="any" placeholder="Рост (м)" required>
       <button type="submit">Рассчитать BMI</button>
     </form>
-    {% if bmi is defined %}
-      <p>BMI: <strong>{{bmi}}</strong> — {{bmi_cat}}</p>
-    {% endif %}
+    {% if bmi is defined %}<div class="result">BMI: {{bmi}} — {{bmi_cat}}</div>{% endif %}
   </div>
 
   <div class="card">
-    <h2>Программистский калькулятор (decimal ↔ hex/bin)</h2>
+    <h2>Программистский калькулятор</h2>
     <form method="post" action="/prog">
-      <input name="number" type="text" placeholder="число" required>
+      <input name="number" type="text" placeholder="Число" required>
       <select name="base">
         <option value="dec">10</option>
         <option value="hex">16</option>
@@ -123,9 +114,7 @@ TEMPLATE = '''
       </select>
       <button type="submit">Преобразовать</button>
     </form>
-    {% if prog is defined %}
-      <p>Результат: <strong>{{prog}}</strong></p>
-    {% endif %}
+    {% if prog is defined %}<div class="result">{{prog}}</div>{% endif %}
   </div>
 
   <div class="card">
@@ -135,17 +124,15 @@ TEMPLATE = '''
       <input name="d2" type="date" required>
       <button type="submit">Посчитать</button>
     </form>
-    {% if datediff is defined %}
-      <p>Разница: <strong>{{datediff}}</strong></p>
-    {% endif %}
+    {% if datediff is defined %}<div class="result">Разница: {{datediff}}</div>{% endif %}
   </div>
 
-  <footer style="margin-top:24px">Сделано на Python + Flask. Инструкции по хостингу и добавлению рекламы — в описании проекта.</footer>
+</div>
+<footer>Сделано на Python + Flask | Красивый и интерактивный интерфейс</footer>
 </body>
 </html>
 '''
 
-# Helper safety: limit eval for scientific expressions
 SAFE_NAMES = {k: getattr(math, k) for k in dir(math) if not k.startswith("__")}
 SAFE_NAMES.update({'abs': abs, 'round': round})
 
@@ -161,13 +148,7 @@ def basic_calc():
     try:
         x = float(a)
         y = float(b)
-        if op == '+': res = x + y
-        elif op == '-': res = x - y
-        elif op == '*': res = x * y
-        elif op == '/': res = x / y if y != 0 else 'Ошибка: деление на 0'
-        elif op == '%': res = x % y
-        elif op == '**': res = x ** y
-        else: res = 'Неизвестная операция'
+        res = {'+': x+y, '-': x-y, '*': x*y, '/': x/y if y!=0 else 'Ошибка деления', '%': x%y, '**': x**y}.get(op, 'Неизвестная операция')
     except Exception as e:
         res = f'Ошибка: {e}'
     return render_template_string(TEMPLATE, basic=res)
@@ -175,7 +156,6 @@ def basic_calc():
 @app.route('/scientific', methods=['POST'])
 def scientific():
     expr = request.form['expr']
-    # Разрешаем только имена из SAFE_NAMES и числа
     try:
         code = compile(expr, '<string>', 'eval')
         for name in code.co_names:
@@ -192,17 +172,10 @@ def convert():
     val = float(request.form['value'])
     direction = request.form['direction']
     try:
-        if kind == 'temp':
-            if direction == 'forward': res = f"{val} °C = {(val*9/5)+32} °F"
-            else: res = f"{val} °F = {(val-32)*5/9} °C"
-        elif kind == 'length':
-            if direction == 'forward': res = f"{val} m = {val*3.28084} ft"
-            else: res = f"{val} ft = {val/3.28084} m"
-        elif kind == 'weight':
-            if direction == 'forward': res = f"{val} kg = {val*2.20462} lb"
-            else: res = f"{val} lb = {val/2.20462} kg"
-        else:
-            res = 'Неизвестный конвертер'
+        if kind == 'temp': res = f"{val} °C = {(val*9/5)+32} °F" if direction=='forward' else f"{val} °F = {(val-32)*5/9} °C"
+        elif kind == 'length': res = f"{val} m = {val*3.28084} ft" if direction=='forward' else f"{val} ft = {val/3.28084} m"
+        elif kind == 'weight': res = f"{val} kg = {val*2.20462} lb" if direction=='forward' else f"{val} lb = {val/2.20462} kg"
+        else: res='Неизвестный конвертер'
     except Exception as e:
         res = f'Ошибка: {e}'
     return render_template_string(TEMPLATE, convert=res)
@@ -213,16 +186,11 @@ def mortgage():
     r = float(request.form['annual_rate'])/100/12
     n = int(request.form['years'])*12
     try:
-        if r == 0:
-            monthly = P/n
-        else:
-            monthly = P * (r * (1+r)**n) / ((1+r)**n - 1)
-        total = monthly * n
-        monthly = round(monthly,2)
-        total = round(total,2)
+        monthly = P/n if r==0 else P*(r*(1+r)**n)/((1+r)**n-1)
+        total = monthly*n
+        monthly, total = round(monthly,2), round(total,2)
     except Exception as e:
-        monthly = f'Ошибка: {e}'
-        total = ''
+        monthly, total = f'Ошибка: {e}', ''
     return render_template_string(TEMPLATE, mortgage=monthly, mortgage_total=total)
 
 @app.route('/bmi', methods=['POST'])
@@ -230,16 +198,15 @@ def bmi():
     w = float(request.form['weight'])
     h = float(request.form['height'])
     try:
-        val = w / (h*h)
+        val = w/(h*h)
         cat = 'норма'
-        if val < 18.5: cat = 'недостаток веса'
-        elif val < 25: cat = 'норма'
-        elif val < 30: cat = 'излишний вес'
-        else: cat = 'ожирение'
+        if val<18.5: cat='недостаток веса'
+        elif val<25: cat='норма'
+        elif val<30: cat='излишний вес'
+        else: cat='ожирение'
         res = round(val,2)
     except Exception as e:
-        res = f'Ошибка: {e}'
-        cat = ''
+        res, cat = f'Ошибка: {e}', ''
     return render_template_string(TEMPLATE, bmi=res, bmi_cat=cat)
 
 @app.route('/prog', methods=['POST'])
@@ -247,14 +214,7 @@ def prog():
     num = request.form['number']
     base = request.form['base']
     try:
-        if base == 'dec':
-            n = int(num,10)
-        elif base == 'hex':
-            n = int(num,16)
-        elif base == 'bin':
-            n = int(num,2)
-        else:
-            return render_template_string(TEMPLATE, prog='неизвестная система')
+        n = int(num, {'dec':10,'hex':16,'bin':2}[base])
         res = f"dec: {n} | hex: {hex(n)} | bin: {bin(n)}"
     except Exception as e:
         res = f'Ошибка: {e}'
@@ -265,9 +225,7 @@ def datediff():
     d1 = request.form['d1']
     d2 = request.form['d2']
     try:
-        dt1 = datetime.date.fromisoformat(d1)
-        dt2 = datetime.date.fromisoformat(d2)
-        diff = abs((dt2 - dt1).days)
+        diff = abs((datetime.date.fromisoformat(d2)-datetime.date.fromisoformat(d1)).days)
         res = f"{diff} дней"
     except Exception as e:
         res = f'Ошибка: {e}'
